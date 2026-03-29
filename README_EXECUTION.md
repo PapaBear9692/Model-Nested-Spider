@@ -1,19 +1,104 @@
 # Model-Nested-Spider - Execution & Program Flow Guide
 
 ## Table of Contents
-1. [How to Run](#how-to-run)
-2. [Key Arguments](#key-arguments)
-3. [Program Flow Overview](#program-flow-overview)
-4. [Detailed Phase Breakdown](#detailed-phase-breakdown)
-5. [Data Flow](#data-flow)
-6. [Output Structure](#output-structure)
-7. [Quick Reference](#quick-reference)
+1. [Quick Start](#quick-start)
+2. [How to Run](#how-to-run)
+3. [Key Arguments](#key-arguments)
+4. [Program Flow Overview](#program-flow-overview)
+5. [Detailed Phase Breakdown](#detailed-phase-breakdown)
+6. [Data Flow](#data-flow)
+7. [Output Structure](#output-structure)
+8. [Quick Reference](#quick-reference)
+
+---
+
+## Quick Start
+
+### Easiest: Use Run Scripts
+
+**Linux/macOS:**
+```bash
+./run.sh
+```
+
+**Windows:**
+```cmd
+run.bat
+```
+
+Both scripts automatically:
+- ✅ Load environment from `.env` file
+- ✅ Use sensible defaults (CIFAR10, batch_size=128, max_epoch=50)
+- ✅ Display configuration before running
+- ✅ Execute training with all paths configured
+
+### Custom Parameters
+
+**Linux/macOS:**
+```bash
+./run.sh --max_epoch 100 --batch_size 64 --train_dataset Dogs --test_dataset Flowers
+```
+
+**Windows:**
+```cmd
+run.bat --max_epoch 100 --batch_size 64 --train_dataset Dogs --test_dataset Flowers
+```
+
+### Set Environment Variables
+
+**Linux/macOS:**
+```bash
+BATCH_SIZE=64 MAX_EPOCH=20 GPU=0 ./run.sh
+```
+
+**Windows:**
+```cmd
+set BATCH_SIZE=64
+set MAX_EPOCH=20
+set GPU=0
+run.bat
+```
 
 ---
 
 ## How to Run
 
-### Basic Command (from example shell script)
+### Pre-configured Environment
+
+All paths are automatically configured via `.env` file:
+```bash
+# .env contents (automatically loaded)
+PATH_TO_SRC_DATA=./data          # Model features directory
+PATH_TO_LOG=./logs               # Logging & checkpoint output
+PATH_TO_PRETRAINED_MODEL=./data  # Pre-trained model location
+```
+
+**No manual path configuration needed!** The environment loads automatically when Python starts.
+
+### Option 1: Run Script (Recommended for Most Users)
+
+**Default run (CIFAR10):**
+```bash
+./run.sh
+```
+
+**Custom parameters:**
+```bash
+./run.sh --max_epoch 100 --batch_size 64 --train_dataset Dogs --test_dataset Flowers
+```
+
+### Option 2: Direct Python Execution
+
+**Basic training (auto-configured paths):**
+```bash
+python trainer.py \
+    --train_dataset CIFAR10 \
+    --test_dataset CIFAR10 \
+    --max_epoch 50 \
+    --batch_size 128
+```
+
+**Advanced training with heterogeneous models:**
 ```bash
 python trainer.py \
     --seed 0 \
@@ -34,20 +119,28 @@ python trainer.py \
     --lr_scheduler cosine \
     --val_ratio 0.05 \
     --fixed_gt_size_threshold 64 \
-    --heterogeneous_sampled_maxnum 10 \
-    --data_url /path/to/data \
-    --log_url /path/to/logs
+    --heterogeneous_sampled_maxnum 10
 ```
 
-### Running in Inference Mode
+### Option 3: Inference Mode (Using Pre-trained Model)
+
+The repository includes `best.pth` (279MB) in the `data/` directory.
+
+**Using run script:**
 ```bash
-# Load a pre-trained model and test on downstream tasks
+# Linux/macOS
+PRETRAINED_URL=./data/best.pth ./run.sh --test_dataset CIFAR10 Aircraft Flowers
+
+# Windows
+set PRETRAINED_URL=./data/best.pth
+run.bat --test_dataset CIFAR10 Aircraft Flowers
+```
+
+**Direct Python:**
+```bash
 python trainer.py \
-    --seed 0 \
-    --test_dataset CIFAR10 Caltech101 DTD Pet Aircraft \
-    --data_url /path/to/data \
-    --log_url /path/to/logs \
-    --pretrained_url /path/to/checkpoint.pth    # Triggers inference mode
+    --test_dataset CIFAR10 Aircraft Flowers Pet SUN397 \
+    --pretrained_url ./data/best.pth
 ```
 
 When `--pretrained_url` is provided, the program **skips training** and runs inference only.
@@ -92,9 +185,9 @@ When `--pretrained_url` is provided, the program **skips training** and runs inf
 ### Path Configuration
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
-| `--data_url` | str | '' | **Required**: Path to dataset features |
-| `--log_url` | str | /data/zhangyk/models/implclproto_logs | Directory to save logs & checkpoints |
-| `--pretrained_url` | str | None | **Optional**: Path to pre-trained model (inference mode) |
+| `--data_url` | str | ./data | Path to dataset features (auto-configured from .env) |
+| `--log_url` | str | ./logs | Directory to save logs & checkpoints (auto-configured from .env) |
+| `--pretrained_url` | str | None | **Optional**: Path to pre-trained model (enables inference mode) |
 
 ### System Configuration
 | Argument | Type | Default | Description |
@@ -518,43 +611,126 @@ wtau of Aircraft: 0.7834
 
 ## Quick Reference
 
+### Environment Setup
+
+**View environment configuration:**
+```bash
+cat .env
+```
+
+**Output:**
+```
+PATH_TO_SRC_DATA=./data
+PATH_TO_LOG=./logs
+PATH_TO_PRETRAINED_MODEL=./data
+```
+
+All paths are **automatically loaded** - no manual setup required!
+
 ### Common Commands
 
-**Train with default settings:**
+**1. Train with default settings (recommended):**
+```bash
+# Linux/macOS
+./run.sh
+
+# Windows
+run.bat
+```
+
+**2. Train with custom datasets:**
+```bash
+# Linux/macOS
+./run.sh --train_dataset Dogs Flowers --test_dataset CIFAR10 Aircraft
+
+# Windows
+run.bat --train_dataset Dogs Flowers --test_dataset CIFAR10 Aircraft
+```
+
+**3. Direct Python with custom settings:**
 ```bash
 python trainer.py \
     --train_dataset c86 c59 c16 \
     --test_dataset CIFAR10 Aircraft \
-    --data_url /path/to/data \
-    --log_url /path/to/logs
+    --max_epoch 50 \
+    --batch_size 128
 ```
 
-**Resume training from checkpoint:**
+**4. Run inference on pre-trained model:**
 ```bash
-# Note: Re-run with same settings, it will overwrite
-# Better: Modify time_str to new value if you want separate runs
-python trainer.py \
-    --time_str 0329-14-32-45-123 \
-    --train_dataset c86 c59 c16 \
-    --test_dataset CIFAR10 Aircraft \
-    --data_url /path/to/data \
-    --log_url /path/to/logs
-```
+# Linux/macOS
+PRETRAINED_URL=./data/best.pth ./run.sh --test_dataset CIFAR10 Aircraft
 
-**Run inference on pre-trained model:**
-```bash
+# Windows
+set PRETRAINED_URL=./data/best.pth
+run.bat --test_dataset CIFAR10 Aircraft
+
+# Or direct Python
 python trainer.py \
-    --seed 0 \
     --test_dataset CIFAR10 Aircraft DTD \
-    --data_url /path/to/data \
-    --log_url /path/to/logs \
-    --pretrained_url ./modelspider_store/best.pth
+    --pretrained_url ./data/best.pth
 ```
 
-**Monitor training with TensorBoard:**
+**5. Monitor training with TensorBoard:**
 ```bash
-tensorboard --logdir /path/to/logs --port 6006
+tensorboard --logdir ./logs --port 6006
 # Open browser: http://localhost:6006
+```
+
+**6. Check output results:**
+```bash
+# View latest training results
+ls -lt ./logs/[setting_str]/[latest_time_str]/
+
+# Check evaluation metrics
+cat ./logs/[setting_str]/[latest_time_str]/heterogeneous_sampled_acc.csv
+```
+
+### Troubleshooting
+
+**Issue: "dotenv not found"**
+```bash
+pip install python-dotenv
+```
+
+**Issue: "CUDA out of memory"**
+```bash
+./run.sh --batch_size 32   # Reduce batch size
+```
+
+Or set via environment:
+```bash
+BATCH_SIZE=32 ./run.sh
+```
+
+**Issue: ".env file not found"**
+```bash
+# The .env file should be in the repo root
+# Check it exists:
+cat .env
+
+# Or recreate from template:
+cat > .env << EOF
+PATH_TO_SRC_DATA=./data
+PATH_TO_LOG=./logs
+PATH_TO_PRETRAINED_MODEL=./data
+EOF
+```
+
+**Issue: Missing data files**
+```bash
+# Verify data directory structure
+ls -la ./data/implclproto/ | head -10
+
+# Check best.pth exists
+ls -lh ./data/best.pth
+```
+
+---
+
+## Advanced Usage
+
+### Resume training from checkpoint:
 ```
 
 ### Troubleshooting

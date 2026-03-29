@@ -34,135 +34,113 @@ An optimized upgrade to the original [Model-Spider](https://github.com/zhangyika
 
 ## Installation
 
-### 1. Set up the Conda environment:
+### Quick Setup (Automated)
 
+This project is now **fully self-contained** with all required files and models included in the repository.
+
+**Step 1: Clone and enter directory**
+```bash
+git clone <repo-url>
+cd Model-Nested-Spider
+```
+
+**Step 2: Create Conda environment with PyTorch**
 ```bash
 conda create --name spider-env python=3.10 pytorch torchvision pytorch-cuda -c nvidia -c pytorch -y
 conda activate spider-env
 ```
 
-### 2. Clone and install:
-
+**Step 3: Install Python dependencies**
 ```bash
-git clone https://github.com/zhangyikaii/Model-Spider.git
-cd Model-Spider
 pip install -r requirements.txt
 ```
 
-### 3. Configure data path:
+That's it! ✅ All data files (8GB of pre-trained models) and the best.pth checkpoint are already in the `data/` directory.
 
-Choose your storage directory and configure it:
+### Environment Configuration
+
+Environment variables are automatically loaded from the included `.env` file:
 
 ```bash
-source ./scripts/modify-path.sh /path/to/your/storage
+# .env file (automatically loaded)
+PATH_TO_SRC_DATA=./data
+PATH_TO_LOG=./logs
+PATH_TO_PRETRAINED_MODEL=./data
 ```
 
-This sets the `PATH_TO_SRC_DATA` and other environment variables.
-
-### 4. Download pre-trained model:
-
-Download the pre-trained Model-Spider checkpoint from the [official repository](https://github.com/zhangyikaii/Model-Spider.git) and place it in your configured storage path.
-
-- File: `best.pth`
-- Size: ~100MB
-- Location: `{storage_path}/best.pth`
+No manual path configuration needed! 🎉
 
 ---
 
 ## Quick Start
 
-### Run Pre-trained Model (Inference Only)
+### Option 1: Use Run Script (Recommended)
+
+**Linux/macOS:**
+```bash
+./run.sh
+```
+
+**Windows:**
+```cmd
+run.bat
+```
+
+This runs the default configuration (CIFAR10) with sensible defaults.
+
+### Option 2: Custom Parameters
+
+**Linux/macOS:**
+```bash
+./run.sh --train_dataset Dogs --test_dataset Flowers --max_epoch 20
+```
+
+**Windows:**
+```cmd
+run.bat --train_dataset Dogs --test_dataset Flowers --max_epoch 20
+```
+
+### Option 3: Direct Python Execution
 
 ```bash
-bash scripts/test-model-spider.sh /path/to/storage/best.pth
+python trainer.py \
+    --train_dataset CIFAR10 \
+    --test_dataset CIFAR10 \
+    --max_epoch 50 \
+    --batch_size 128
 ```
 
-This evaluates the pre-trained Model-Spider on test datasets and displays results.
+### Inference Mode (Using Pre-trained Model)
 
-**Expected Output:**
+The repository includes `best.pth` (279MB) so you can immediately run inference:
+
+**Linux/macOS:**
+```bash
+PRETRAINED_URL=./data/best.pth ./run.sh --test_dataset CIFAR10 Aircraft Flowers
 ```
-Model Spider's scores on ['resnet50', 'vit_base', 'swin_base', ...]
-[0.9234, 0.7856, 0.8123, ...]
-best heterogeneous_sample_num: 5
-wtau of CIFAR10: 0.8956
-wtau of Aircraft: 0.7834
-...
+
+**Windows:**
+```cmd
+set PRETRAINED_URL=./data/best.pth
+run.bat --test_dataset CIFAR10 Aircraft Flowers
+```
+
+**Direct Python:**
+```bash
+python trainer.py \
+    --test_dataset CIFAR10 Aircraft Flowers \
+    --pretrained_url ./data/best.pth
 ```
 
 ---
 
-## How to Run
+## Complete Argument Reference
 
-### Basic Training Command
+For comprehensive argument documentation, see [README_EXECUTION.md](./README_EXECUTION.md).
 
-```bash
-python trainer.py \
-    --seed 0 \
-    --train_dataset c86 c59 c16 c14 c38 c43 c9 c12 c32 c19 c31 c57 c29 \
-    --val_dataset c86 \
-    --test_dataset CIFAR10 Caltech101 DTD Pet Aircraft CIFAR100 Cars SUN397 dSprites \
-    --test_size_threshold 1536 \
-    --data_sub_url swin_base_7_checkpoint \
-    --heterogeneous \
-    --lr 0.00025 \
-    --weight_decay 0.0005 \
-    --momentum 0.5 \
-    --max_epoch 30 \
-    --optimizer Adam \
-    --num_learnware 10 \
-    --batch_size 16 \
-    --dataset_size_threshold 5120 \
-    --lr_scheduler cosine \
-    --val_ratio 0.05 \
-    --fixed_gt_size_threshold 64 \
-    --heterogeneous_sampled_maxnum 10 \
-    --data_url {storage_path}/data \
-    --log_url {storage_path}/logs
-```
+### Quick Reference
 
-### Inference on Pre-trained Model
-
-```bash
-python trainer.py \
-    --seed 0 \
-    --test_dataset CIFAR10 Caltech101 DTD Pet Aircraft \
-    --data_url {storage_path}/data \
-    --log_url {storage_path}/logs \
-    --pretrained_url {storage_path}/best.pth
-```
-
-### Key Arguments Reference
-
-| Category | Argument | Type | Default | Description |
-|----------|----------|------|---------|-------------|
-| **Dataset** | `--train_dataset` | str list | None | Model cluster IDs to train on |
-| | `--test_dataset` | str list | None | Downstream tasks (CIFAR10, Aircraft, etc.) |
-| | `--val_dataset` | str list | None | Optional validation dataset |
-| **Training** | `--max_epoch` | int | 50 | Number of training epochs |
-| | `--batch_size` | int | 128 | Training batch size |
-| | `--lr` | float | 0.01 | Learning rate |
-| | `--weight_decay` | float | 0.00005 | L2 regularization |
-| | `--optimizer` | str | Adam | Adam or SGD |
-| | `--lr_scheduler` | str | cosine | cosine, step, multistep, plateau |
-| **Model** | `--num_learnware` | int | 72 | Number of model tokens to rank |
-| | `--heterogeneous` | flag | False | Enable heterogeneous model support |
-| | `--heterogeneous_sampled_maxnum` | int | 10 | Max heterogeneous models to sample |
-| **Paths** | `--data_url` | str | '' | **Required**: Path to dataset features |
-| | `--log_url` | str | logs | Directory to save logs & checkpoints |
-| | `--pretrained_url` | str | None | **Optional**: Path to pre-trained model |
-| **System** | `--gpu` | str | 0 | GPU device ID |
-| | `--seed` | int | 1 | Random seed |
-| | `--num_workers` | int | 8 | DataLoader workers |
-
-For complete argument list, see [README_EXECUTION.md](./README_EXECUTION.md).
-
----
-
-## Understanding the Program Flow
-
-### High-Level Architecture
-
-```
+**Common Training Command:**
 Input: Downstream task dataset
          ↓
   Feature Extraction (Swin backbone)
