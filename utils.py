@@ -21,6 +21,14 @@ from logging.config import dictConfig
 from tensorboardX import SummaryWriter
 from collections import defaultdict, OrderedDict
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+# Load .env file from repo root
+repo_root = os.path.dirname(os.path.abspath(__file__))
+env_file = os.path.join(repo_root, '.env')
+if os.path.exists(env_file):
+    load_dotenv(env_file)
+
 _utils_pp = pprint.PrettyPrinter()
 
 
@@ -34,7 +42,10 @@ def get_command_line_parser():
     parser.add_argument('--gpu', type=str, default='0')
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--time_str', type=str, default='')
-    parser.add_argument('--log_url', type=str, default='/data/zhangyk/models/implclproto_logs')
+    # Default log directory in repo root
+    repo_root = os.path.dirname(os.path.abspath(__file__))
+    default_log_url = os.path.join(repo_root, 'logs')
+    parser.add_argument('--log_url', type=str, default=default_log_url)
     return parser
 
 

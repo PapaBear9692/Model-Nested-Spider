@@ -11,6 +11,13 @@ from pathlib import Path
 from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
 
+# Load environment variables from .env file early
+from dotenv import load_dotenv
+repo_root = os.path.dirname(os.path.abspath(__file__))
+env_file = os.path.join(repo_root, '.env')
+if os.path.exists(env_file):
+    load_dotenv(env_file)
+
 from learnware.model import LearnwareCAHeterogeneous
 from learnware.loss import HierarchicalCE
 from learnware.dataset import LearnwareDataset
@@ -519,6 +526,11 @@ def main():
     parser = get_command_line_parser()
     parser = Trainer.parse_trainer_args(parser)
     args = parser.parse_args()
+
+    # Set default data_url to local repo data folder if not provided
+    if not args.data_url:
+        repo_root = os.path.dirname(os.path.abspath(__file__))
+        args.data_url = os.path.join(repo_root, 'data')
 
     set_gpu(args.gpu)
     set_seed(args.seed)

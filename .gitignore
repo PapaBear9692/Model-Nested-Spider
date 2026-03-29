@@ -1,4 +1,12 @@
-# Byte-compiled / optimized / DLL files
+# Environment variables
+.env
+.env.local
+.env*.local
+
+# Local data directories - large files should not be in repo
+data/
+logs/
+
 __pycache__/
 *.py[codz]
 *$py.class

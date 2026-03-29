@@ -4,8 +4,12 @@ import torch
 
 IN1K_CLASSES = 1000
 
-# Get the value of the environment variable
+# Get the value of the environment variable, or use local data directory
 DATA_PATH_PREFIX = os.environ.get("PATH_TO_SRC_DATA")
+if not DATA_PATH_PREFIX:
+    # Fallback to local repo data directory
+    current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    DATA_PATH_PREFIX = os.path.join(current_dir, 'Model-Nested-Spider', 'data')
 # DATA_PATH_PREFIX = '/data/zhangyk/data'
 DATA_PATHS = {
     'ImageNet': f'{DATA_PATH_PREFIX}/imagenet',
