@@ -1,6 +1,7 @@
 # Core ML/DL Framework
 torch>=1.9.0
 torchvision>=0.10.0
+torchaudio>=0.9.0
 numpy>=1.19.0
 
 # Model and Scientific Computing
@@ -19,9 +20,24 @@ python-dotenv>=0.19.0
 # Progress Bars and Utilities
 tqdm>=4.50.0
 
-# Optional: For GPU acceleration
-# Uncomment if using CUDA (installation may vary by system)
-# torch-cuda  # Install appropriate CUDA version separately
+# ============================================================
+# CUDA INSTALLATION FOR GTX 1650 (CUDA 12.1 - RECOMMENDED)
+# ============================================================
+# GTX 1650 supports CUDA 11.8+. Use CUDA 12.1 for best performance.
+#
+# INSTALL ONE OF THE FOLLOWING:
+# 
+# Option 1: Using pip (RECOMMENDED)
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+#
+# Option 2: Using Conda (ALTERNATIVE)
+#   conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+#
+# Option 3: Older CUDA 11.8 (if CUDA 12.1 not available)
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+#
+# VERIFY CUDA INSTALLATION:
+#   python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}'); print(f'GPU: {torch.cuda.get_device_name(0)}')"
 
 # Optional: For development/testing
 # pytest>=6.0.0
